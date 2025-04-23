@@ -1,11 +1,10 @@
-
 # 📚 About MC-Calib
 
 **MC-Calib** is a generic and robust calibration toolbox for multi-camera systems, described in the following paper:
 
 > 📄 Paper: [MC-Calib: A Generic and Robust Calibration Toolbox for Multi-Camera Systems](docs/MC-Calib.pdf)
 
-![](docs/illustration.png)
+![MC-Calib](docs/illustration.png)
 
 # MC-Calib Installation Guide
 
@@ -61,6 +60,7 @@ docker run -it \
 ```
 
 ### 3. Building the Project
+
 Compile the source code inside the Docker container using CMake and Make:
 
 ```bash
@@ -104,77 +104,81 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 ---
 
-# Usage
+## Usage
 
-## Calibration procedure
+### Calibration procedure
 
 1. **Generate your own Charuco boards**
 
-      If all your boards are similar (same number of squares in the x and y directions), you only need to specify the `number_x_square`, `number_y_square`, and `number_board`. Then you can run the Charuco board generator:
-      ```bash
-      ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
-      ```
-      If each board has a specific format (different number of squares), then you need to specify it in the fields 		`number_x_square_per_board` and `number_y_square_per_board`. For instance, if you want to use two boards of size [10x3] and [5x4] respectively, you have to set:
-      ```
-      number_board: 2 
-      number_x_square_per_board: [10,5]
-      number_y_square_per_board: [3,4]
-      ```
-      A sample of Charuco boards is provided in [board_samples](docs/board_samples).
-      Note: the board images are saved to the root folder where the code is executed.
+   If all your boards are similar (same number of squares in the x and y directions), you only need to specify the `number_x_square`, `number_y_square`, and `number_board`. Then you can run the Charuco board generator:
+
+   ```bash
+   ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
+   ```
+
+   If each board has a specific format (different number of squares), then you need to specify it in the fields 		`number_x_square_per_board` and `number_y_square_per_board`. For instance, if you want to use two boards of size [10x3] and [5x4] respectively, you have to set:
+
+   ```text
+   number_board: 2 
+   number_x_square_per_board: [10,5]
+   number_y_square_per_board: [3,4]
+   ```
+
+   A sample of Charuco boards is provided in [board_samples](docs/board_samples).
+   Note: the board images are saved to the root folder where the code is executed.
 
 2. **Print your boards**
 
 3. **Measure the size of the squares on your boards**
 
-      If the boards have all the same square size, you just need to specify it in `square_size` and leave `square_size_per_board` empty. If each board has a different size, specify it in `square_size_per_board`. For instance, `square_size_per_board: [1, 25]` means that the first and second boards are composed of square of size `0.1cm` and `0.25cm` respectively. Note that the square size can be in any unit you prefer (m, cm, inch, etc.) and the resulting calibration will also be expressed in this unit.
+   If the boards have all the same square size, you just need to specify it in `square_size` and leave `square_size_per_board` empty. If each board has a different size, specify it in `square_size_per_board`. For instance, `square_size_per_board: [1, 25]` means that the first and second boards are composed of square of size `0.1cm` and `0.25cm` respectively. Note that the square size can be in any unit you prefer (m, cm, inch, etc.) and the resulting calibration will also be expressed in this unit.
 
 4. **Acquire your images**
 
-      MC-Calib has been designed for synchronized cameras, therefore, you have to make sure that all the cameras in the rig capture images at the exact same time. Additionally, this toolbox has been designed and tested for global shutter cameras, therefore we cannot guarantee highly accurate results if you are using rolling shutter sensors. For high-quality calibration, make sure to have a limited quantity of motion blur during your sequence.
+   MC-Calib has been designed for synchronized cameras, therefore, you have to make sure that all the cameras in the rig capture images at the exact same time. Additionally, this toolbox has been designed and tested for global shutter cameras, therefore we cannot guarantee highly accurate results if you are using rolling shutter sensors. For high-quality calibration, make sure to have a limited quantity of motion blur during your sequence.
 
 5. **Prepare your video sequences**
 
-      The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'. 
+   The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'. 
 
 6. **Setup the configuration file for your system**
 
-	* *Set the number of cameras and cameras' types:*
+   - *Set the number of cameras and cameras' types:*
 
       The number of cameras to be calibrated have to be specified in the field `number_camera`.
       If you are calibrating a homogeneous camera system you can specify the camera type with `distortion_model`: `0` signifies that all your cameras are perspective (Brown distortion model) and a `1` will use the Kannala distortion model (fisheye).
       If you are calibrating a hybrid vision system (composed of both fisheye and perspective cameras), you need to specify the type of distortion model you wish to use in the vector `distortion_per_camera`.
 
-	* *Set the image path:*
+   - *Set the image path:*
 
       You need to specify the folder where the images have been stored in the field `root_path` for instance `"../Data/Image_folder/"`.
 
-	* *Set the outputs:*
+   - *Set the outputs:*
 
       By default, MC-Calib will generate the camera calibration results, the reprojection error log, the 3D object structure, detected keypoints, and the pose of the object for each frame where it has been detected. Additionally, you can save the detection and reprojection images by setting `save_detection` and `save_reprojection` to `1`.
 
-	* *Using only certain boards:*
+   - *Using only certain boards:*
 
       If you prepared a large number of calibration objects but only a few appear in your calibration sequence, you can specify the list of boards' indexes in `boards_index`. Specifying the board indexes avoids trying to detect all the boards and will speed up your calibration.
 
-	* *Advanced setup:*
+   - *Advanced setup:*
 
       For a general calibration setup, for the sake of robustness, we recommend setting `min_perc_pts` to at least 0.4 (40% of the points of the board should appear to be considered). However, in the case of calibration of limited field-of-view overlapping with a single board, this parameter can be reduced significantly. Our automatic colinear points check should avoid most degenerated configurations.
       The provided example configuration files contain a few additional parameters which can be tuned. Letting these parameters by default should lead to a correct calibration of your system, but you can adjust them if needed. These parameters are quite self explicit and described in the configuration files.
 
 7. **Run the calibration**
 
-	```bash
-	./apps/calibrate/calibrate ../configs/calib_param.yml
-	```
+   ```bash
+   ./apps/calibrate/calibrate ../configs/calib_param.yml
+   ```
 
 8. **Run post-calibration analysis**
 
-	```bash
-	python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
-	```
+```bash
+python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+```
 
-## Calibration file
+### Calibration File Sample
 
 For multiple camera calibration configuration examples see `configs/*.yml`.  For easier start, just duplicate the most relevant setup and fill with details.
 
@@ -224,11 +228,11 @@ save_reprojection: 1
 camera_params_file_name: "" # "name.yml"
 ```
 
-## Output explanation
+### Output Explanation
 
 The calibration toolbox automatically outputs four ```*.yml``` files. To illustrate them, we propose to display the results obtained from the calibration of a hybrid stereo-vision system.
 
-* **Camera parameters:** `calibrated_cameras_data.yml`
+- **Camera parameters:** `calibrated_cameras_data.yml`
 
    ```bash
    %YAML:1.0
@@ -287,7 +291,7 @@ The calibration toolbox automatically outputs four ```*.yml``` files. To illustr
             9.9998752443824268e-01, 1.8600285922272908e+00, 0., 0., 0., 1. ]  #4x4 extrinsic matrix, expressed in camera 0 referencial
    ```
 
-* **Object 3D structure:** `calibrated_objects_data.yml`
+- **Object 3D structure:** `calibrated_objects_data.yml`
 
    ```bash
    %YAML:1.0
@@ -307,31 +311,34 @@ The calibration toolbox automatically outputs four ```*.yml``` files. To illustr
             0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. ]
    ```
 
-* **Object's poses:** `calibrated_objects_pose_data.yml`
+- **Object's poses:** `calibrated_objects_pose_data.yml`
 
    The pose of the object (for all frames where boards are visible) with respect to the reference camera is provided in this file as a 6xn array. Each row contains the Rodrigues angle-axis (3 floats) followed by the translation vector (3 floats).
 
-* **Reprojection error log:** `reprojection_error_data.yml`
+- **Reprojection error log:** `reprojection_error_data.yml`
 
    The reprojection error for each corner, camera and frame.
 
    Samples of python code to read these files are provided in ```python_utils```
 
-# Datasets
+## Datasets
+
 The synthetic and real datasets acquired for this paper are freely available via the following links:
+
 - [Real Data](https://drive.google.com/file/d/143jdSi5fxUGj1iEGbTIQPfSqcOyuW-MR/view?usp=sharing)
 - [Synthetic Data](https://drive.google.com/file/d/1CxaXUbO4E9WmaVrYy5aMeRLKmrFB_ARl/view?usp=sharing)
 
 Documentation is available [online](https://codedocs.xyz/rameau-fr/MC-Calib/). To generate local documentation, follow [the instructions](/docs/Documentation.md).
 
-# Contribution
+## Contribution
 
-Please follow `docs/contributing.rst` when introducing changes. 
+Please follow `docs/contributing.rst` when introducing changes.
 
-# Citation
+## Citation
 
 If you use this project in your research, please cite:
-```
+
+```text
 @article{RAMEAU2022103353,
 title = {MC-Calib: A generic and robust calibration toolbox for multi-camera systems},
 journal = {Computer Vision and Image Understanding},
@@ -344,5 +351,3 @@ author = {Francois Rameau and Jinsun Park and Oleksandr Bailo and In So Kweon},
 keywords = {Camera calibration, Multi-camera system},
 }
 ```
-
-
