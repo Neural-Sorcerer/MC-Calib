@@ -27,8 +27,7 @@ void runCalibrationWorkflow(const std::filesystem::path &config_path) {
   Calib.calibrateCameraGroup();
   LOG_INFO << "Camera group calibration done!";
 
-  // Merge objects again to deal with boards visible simultaneously from camera
-  // groups
+  // Merge objects again to deal with boards visible simultaneously from camera groups
   Calib.merge3DObjects();
 
   // Calibrate Non-Overlapping cameras
@@ -38,7 +37,7 @@ void runCalibrationWorkflow(const std::filesystem::path &config_path) {
   LOG_INFO << "Non-overlapping calibration done!";
 
   // merge camera groups 1
-  LOG_INFO << "Merge cameras and objets initiated";
+  LOG_INFO << "Merge cameras and objects initiated";
   Calib.initInterCamGroupGraph();
   Calib.mergeCameraGroup();
   Calib.mergeAllCameraGroupObs();
@@ -50,7 +49,7 @@ void runCalibrationWorkflow(const std::filesystem::path &config_path) {
   Calib.mergeAllCameraGroupObs();
   Calib.estimatePoseAllObjects();
   Calib.computeAllObjPoseInCameraGroup();
-  LOG_INFO << "Merge cameras and objets done!";
+  LOG_INFO << "Merge cameras and objects done!";
 
   // Final Optimization
   LOG_INFO << "Final refinement initiated";
