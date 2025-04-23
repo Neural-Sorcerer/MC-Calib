@@ -1,47 +1,109 @@
 
-# MC-Calib
+# 📚 About MC-Calib
 
-Toolbox described in the paper ["MC-Calib: A generic and robust calibration toolbox for multi-camera systems"](https://www.sciencedirect.com/science/article/abs/pii/S1077314221001818) ([RG](https://www.researchgate.net/publication/357801965_MC-Calib_A_generic_and_robust_calibration_toolbox_for_multi-camera_systems) for open access, [preprint](https://github.com/rameau-fr/MC-Calib/issues/4)).
+**MC-Calib** is a generic and robust calibration toolbox for multi-camera systems, described in the following paper:
+
+> 📄 Paper: [MC-Calib: A Generic and Robust Calibration Toolbox for Multi-Camera Systems](docs/MC-Calib.pdf)
 
 ![](docs/illustration.png)
 
-# Installation
+# MC-Calib Installation Guide
 
-For Windows users, follow [this installation guide](/docs/Windows.md).
+## 📦 Requirements
 
-Requirements: Ceres, Boost, OpenCV {4.2.0, 4.5.5, 4.10.0, 4.11.0}, c++17 
+- C++17 compatible compiler
+- Install [Docker](https://docs.docker.com/engine/install/) on your system
+- Required libraries (included in Docker image):
+  - [Ceres Solver](http://ceres-solver.org/)
+  - [Boost](https://www.boost.org/)
+  - [OpenCV](https://opencv.org/) — supported versions: `4.2.0`, `4.5.5`, `4.10.0`, `4.11.0`
 
-- [Install](https://docs.docker.com/engine/install/) docker
+> 🪟 **Windows users**: Please refer to the [Windows installation guide](/docs/Windows.md)
 
-- Pull the image:
+---
 
-   ```bash
-   docker pull bailool/mc-calib-prod:opencv4110 # production environment
-   docker pull bailool/mc-calib-dev:opencv4110  # development environment
-   ```
+## 🐳 Docker Setup
 
-- Run pulled image (set `PATH_TO_REPO_ROOT` and `PATH_TO_DATA` appropriately):
+### 1. Pull Prebuilt Images
 
-   ```bash
-   docker run \
-               -ti --rm \
-               --volume="$PATH_TO_REPO_ROOT:/home/MC-Calib" \
-               --volume="$PATH_TO_DATA:/home/MC-Calib/data" \
-               bailool/mc-calib-prod:opencv4110
-   ```
-      
-Compiling the code:
+```bash
+# Production environment
+docker pull bailool/mc-calib-prod:opencv4110
 
-   ```bash
-   cd MC-Calib
-   mkdir build
-   cd build
-   cmake -DCMAKE_BUILD_TYPE=Release ..
-   make -j10  
-   ```
+# Development environment
+docker pull bailool/mc-calib-dev:opencv4110
+```
 
-Documentation is available [online](https://codedocs.xyz/rameau-fr/MC-Calib/). To generate local documentation, follow [the instructions](/docs/Documentation.md).
-      
+### 2. Run the Container
+
+> 💡 Replace `$(pwd)` with your actual project root if not already in the MC-Calib directory.
+
+#### Production Environment
+
+```bash
+docker run -it --rm \
+  --name mc-calib-prod \
+  --hostname max \
+  --workdir /home/MC-Calib \
+  --volume="$(pwd):/home/MC-Calib" \
+  bailool/mc-calib-prod:opencv4110
+```
+
+#### Development Environment (recommended)
+
+```bash
+docker run -it \
+  --name mc-calib-dev \
+  --hostname max \
+  --workdir /home/MC-Calib \
+  --volume="$(pwd):/home/MC-Calib" \
+  bailool/mc-calib-dev:opencv4110
+```
+
+### 3. Building the Project
+Compile the source code inside the Docker container using CMake and Make:
+
+```bash
+# Step by step compilation
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+
+# Or use one-step compilation
+mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)
+```
+
+### 4. Quick Start
+
+```bash
+# 1. Modify the config file or use a prebuilt one by this path:
+/home/MC-Calib/configs/calib_param.yml
+
+# 2. Generate your own Charuco boards
+./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
+
+# 3. Run the calibration
+./apps/calibrate/calibrate ../configs/calib_param.yml
+
+# 4. Run post-calibration analysis
+python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+```
+
+### 5. Container Management (optional)
+
+```bash
+# Resume container session
+docker start -ai mc-calib-dev
+
+# Remove container completely
+docker rm mc-calib-dev
+
+# Optional: Add color to the terminal prompt inside the container
+export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
+```
+
+---
+
 # Usage
 
 ## Calibration procedure
@@ -260,6 +322,7 @@ The synthetic and real datasets acquired for this paper are freely available via
 - [Real Data](https://drive.google.com/file/d/143jdSi5fxUGj1iEGbTIQPfSqcOyuW-MR/view?usp=sharing)
 - [Synthetic Data](https://drive.google.com/file/d/1CxaXUbO4E9WmaVrYy5aMeRLKmrFB_ARl/view?usp=sharing)
 
+Documentation is available [online](https://codedocs.xyz/rameau-fr/MC-Calib/). To generate local documentation, follow [the instructions](/docs/Documentation.md).
 
 # Contribution
 
