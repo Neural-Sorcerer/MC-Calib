@@ -6,9 +6,9 @@
 
 ![MC-Calib](docs/illustration.png)
 
-# MC-Calib Installation Guide
+## MC-Calib Installation Guide
 
-## 📦 Requirements
+### 📦 Requirements
 
 - C++17 compatible compiler
 - Install [Docker](https://docs.docker.com/engine/install/) on your system
@@ -21,9 +21,9 @@
 
 ---
 
-## 🐳 Docker Setup
+### 🐳 Docker Setup
 
-### 1. Pull Prebuilt Images
+#### 1. Pull Prebuilt Images
 
 ```bash
 # Production environment
@@ -33,11 +33,11 @@ docker pull bailool/mc-calib-prod:opencv4110
 docker pull bailool/mc-calib-dev:opencv4110
 ```
 
-### 2. Run the Container
+#### 2. Run the Container
 
 > 💡 Replace `$(pwd)` with your actual project root if not already in the MC-Calib directory.
 
-#### Production Environment
+##### Production Environment
 
 ```bash
 docker run -it --rm \
@@ -48,7 +48,7 @@ docker run -it --rm \
   bailool/mc-calib-prod:opencv4110
 ```
 
-#### Development Environment (recommended)
+##### Development Environment (recommended)
 
 ```bash
 docker run -it \
@@ -59,7 +59,7 @@ docker run -it \
   bailool/mc-calib-dev:opencv4110
 ```
 
-### 3. Building the Project
+#### 3. Building the Project
 
 Compile the source code inside the Docker container using CMake and Make:
 
@@ -73,7 +73,7 @@ make -j$(nproc)
 mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)
 ```
 
-### 4. Quick Start
+#### 4. Quick Start
 
 ```bash
 # 1. Modify the config file or use a prebuilt one by this path:
@@ -89,7 +89,7 @@ mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc
 python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
 ```
 
-### 5. Container Management (optional)
+#### 5. Container Management (optional)
 
 ```bash
 # Resume container session
@@ -106,7 +106,7 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 ## Usage
 
-### Calibration procedure
+### Calibration Procedure
 
 1. **Generate your own Charuco boards**
 
@@ -116,7 +116,7 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
    ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
    ```
 
-   If each board has a specific format (different number of squares), then you need to specify it in the fields 		`number_x_square_per_board` and `number_y_square_per_board`. For instance, if you want to use two boards of size [10x3] and [5x4] respectively, you have to set:
+   If each board has a specific format (different number of squares), then you need to specify it in the fields `number_x_square_per_board` and `number_y_square_per_board`. For instance, if you want to use two boards of size [10x3] and [5x4] respectively, you have to set:
 
    ```text
    number_board: 2 
@@ -139,7 +139,7 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 5. **Prepare your video sequences**
 
-   The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'. 
+   The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'.
 
 6. **Setup the configuration file for your system**
 
@@ -174,13 +174,14 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 8. **Run post-calibration analysis**
 
-```bash
-python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
-```
+   ```bash
+   python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+   ```
 
 ### Calibration File Sample
 
-For multiple camera calibration configuration examples see `configs/*.yml`.  For easier start, just duplicate the most relevant setup and fill with details.
+For multiple camera calibration configuration examples see `configs/*.yml`.
+For easier start, just duplicate the most relevant setup and fill with details.
 
 ```bash
 ######################################## Boards Parameters ###################################################
@@ -201,7 +202,7 @@ square_size_per_board: []
 
 ######################################## Camera Parameters ###################################################
 distortion_model: 0         # 0:Brown (perspective) // 1: Kannala (fisheye)
-distortion_per_camera : []  # specify the model per camera, #leave "distortion_per_camera" empty [] if they all follow the same model (make sure that the vector is as long as cameras nb)
+distortion_per_camera: []   # specify the model per camera, #leave "distortion_per_camera" empty [] if they all follow the same model (make sure that the vector is as long as cameras nb)
 number_camera: 2            # number of cameras in the rig to calibrate
 refine_corner: 1            # activate or deactivate the corner refinement
 min_perc_pts: 0.5           # min percentage of points visible to assume a good detection
@@ -211,26 +212,27 @@ cam_params_path: "None"     # file with cameras intrinsics to initialize the int
 ######################################## Images Parameters ###################################################
 root_path: "../data/Synthetic_calibration_image/Scenario_1/Images"
 cam_prefix: "Cam_"
-keypoints_path: "None"      # "path_to/detected_keypoints_data.yml" to save time on keypoint detection
+keypoints_path: "../data/Synthetic_calibration_image/Scenario_1/Images/detected_keypoints_data.yaml" # to save time on keypoint detection
 
 ######################################## Optimization Parameters #############################################
 quaternion_averaging: 1     # use Quaternion Averaging or median for average rotation
 ransac_threshold: 10        # RANSAC threshold in pixel (keep it high just to remove strong outliers)
-number_iterations: 1000     # Max number of iterations for the non linear refinement
+number_iterations: 1000     # max number of iterations for the non linear refinement
 
 ######################################## Hand-eye method #############################################
-he_approach: 0              #0: bootstrapped he technique, 1: traditional he
+he_approach: 0              # 0: bootstrapped he technique, 1: traditional he
 
 ######################################## Output Parameters ###################################################
-save_path: "experiments/Synthetic_calibration_image/Scenario_1"
+save_path: "../data/Synthetic_calibration_image/Scenario_1/Images"
 save_detection: 1
 save_reprojection: 1
-camera_params_file_name: "" # "name.yml"
+camera_params_file_name: "camera_params_file_name.yaml" # "name.yml"
 ```
 
 ### Output Explanation
 
-The calibration toolbox automatically outputs four ```*.yml``` files. To illustrate them, we propose to display the results obtained from the calibration of a hybrid stereo-vision system.
+The calibration toolbox automatically outputs four ```*.yml``` files.</br>
+To illustrate them, we propose to display the results obtained from the calibration of a hybrid stereo-vision system.
 
 - **Camera parameters:** `calibrated_cameras_data.yml`
 
@@ -328,7 +330,8 @@ The synthetic and real datasets acquired for this paper are freely available via
 - [Real Data](https://drive.google.com/file/d/143jdSi5fxUGj1iEGbTIQPfSqcOyuW-MR/view?usp=sharing)
 - [Synthetic Data](https://drive.google.com/file/d/1CxaXUbO4E9WmaVrYy5aMeRLKmrFB_ARl/view?usp=sharing)
 
-Documentation is available [online](https://codedocs.xyz/rameau-fr/MC-Calib/). To generate local documentation, follow [the instructions](/docs/Documentation.md).
+Documentation is available [online](https://codedocs.xyz/rameau-fr/MC-Calib/).</br>
+To generate local documentation, follow [the instructions](/docs/Documentation.md).
 
 ## Contribution
 
