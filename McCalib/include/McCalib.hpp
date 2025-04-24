@@ -59,17 +59,17 @@ public:
   std::string cam_prefix_;
 
   // intput/output path
-  std::filesystem::path
-      cam_params_path_; // path to precalibrated cameras intrinsics
+  std::filesystem::path cam_params_path_; // path to precalibrated cameras intrinsics
   std::filesystem::path keypoints_path_; // path to predetected keypoints
   std::filesystem::path save_path_; // path to save calibrated cameras parameter
-  std::filesystem::path
-      camera_params_file_name_;  // file name with cameras params
+  std::filesystem::path camera_params_file_name_;  // file name with cameras params
+  std::filesystem::path board_poses_file_name_;  // file name with board poses
   int save_repro_, save_detect_; // flag to save or not the images
 
   // various boards size parameters
   std::vector<int> number_x_square_per_board_, number_y_square_per_board_;
   std::vector<int> resolution_x_per_board_, resolution_y_per_board_;
+  std::vector<int> camera_board_poses_index_;  // index of the camera and board to save the poses
   std::vector<double> square_size_per_board_;
 
   // parameters corner refinement
@@ -78,8 +78,7 @@ public:
   int corner_ref_max_iter_ = 20; // max iterations for corner ref
 
   // Optimization parameters
-  bool quaternion_averaging_ =
-      true; // use Quaternion Averaging or median for average rotation
+  bool quaternion_averaging_ = true; // use Quaternion Averaging or median for average rotation
   float ransac_thresh_ = 10; // threshold in pixel
   int nb_iterations_ = 1000; // max number of iteration for refinements
 
@@ -171,6 +170,7 @@ public:
   void saveCamerasParams(); // Save all cameras params
   void save3DObj();         // Save 3D objects
   void save3DObjPose();     // Save 3D objects pose
+  void saveBoardPoses();    // Save board poses
   void saveDetectedKeypoints() const; // save detection keypoints, can be
                                       // re-used to save time in detection stage
   void displayBoards(const cv::Mat &image, const int cam_idx,

@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <random>
 #include <stdio.h>
+#include <fstream>  // Add this include for std::ofstream
 
 #include "McCalib.hpp"
 #include "logger.h"
@@ -62,7 +63,9 @@ Calibration::Calibration(const std::filesystem::path &config_path) {
   fs["boards_index"] >> boards_index;
   fs["length_square"] >> length_square;
   fs["length_marker"] >> length_marker;
+  fs["camera_board_poses_index"] >> camera_board_poses_index_;
   save_path_ = convertStrToPath(fs["save_path"]);
+  board_poses_file_name_ = convertStrToPath(fs["board_poses_file_name"]);
   camera_params_file_name_ = convertStrToPath(fs["camera_params_file_name"]);
   cam_params_path_ = convertStrToPath(fs["cam_params_path"]);
   keypoints_path_ = convertStrToPath(fs["keypoints_path"]);
@@ -480,6 +483,85 @@ void Calibration::save3DObjPose() {
     fs << "}";
   }
   fs.release();
+}
+
+/**
+ * @brief Save board poses for each frame where the board is visible
+ *
+ */
+void Calibration::saveBoardPoses() {
+  // Check if board_poses_file_name is set
+  if (board_poses_file_name_.empty() || board_poses_file_name_ == "None") {
+    LOG_INFO << "Board poses file name not specified, skipping save";
+    return;
+  }
+
+  // Create output directory if it doesn't exist
+  std::filesystem::create_directories(root_path_);
+
+  // Open file for writing
+  std::ofstream file(root_path_ / board_poses_file_name_);
+  if (!file.is_open()) {
+    LOG_ERROR << "Failed to open file for writing board poses";
+    return;
+  }
+
+  // Write header
+  file << "# CameraID BoardID FrameID Rotation(3x3) Translation(3x1)\n";
+
+  // Iterate through board observations
+  for (const auto& [key, obs] : board_observations_) {
+    if (!obs->valid_) continue;
+
+    // Check if we should save this camera-board pair
+    if (!camera_board_poses_index_.empty()) {
+      bool should_save = false;
+      for (size_t i = 0; i < camera_board_poses_index_.size(); i += 2) {
+        if (i + 1 >= camera_board_poses_index_.size()) break;
+        
+        int cam_id = camera_board_poses_index_[i];
+        int board_id = camera_board_poses_index_[i + 1];
+        
+        // Check if this observation matches the filter criteria
+        bool cam_match = (cam_id == -1) || (obs->camera_id_ == cam_id);
+        bool board_match = (board_id == -1) || (obs->board_id_ == board_id);
+        
+        if (cam_match && board_match) {
+          should_save = true;
+          break;
+        }
+      }
+      if (!should_save) continue;
+    }
+
+    // Get rotation and translation vectors
+    cv::Mat rvec, tvec;
+    obs->getPoseVec(rvec, tvec);
+
+    // Convert rotation vector to matrix
+    cv::Mat R;
+    cv::Rodrigues(rvec, R);
+
+    // Write data
+    file << obs->camera_id_ << " " 
+         << obs->board_id_ << " "
+         << obs->frame_id_ << " ";
+    
+    // Write rotation matrix (row-major)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        file << R.at<double>(i,j) << " ";
+      }
+    }
+    
+    // Write translation vector
+    file << tvec.at<double>(0) << " "
+         << tvec.at<double>(1) << " "
+         << tvec.at<double>(2) << "\n";
+  }
+
+  file.close();
+  LOG_INFO << "Board poses saved to " << (root_path_ / board_poses_file_name_);
 }
 
 /**
