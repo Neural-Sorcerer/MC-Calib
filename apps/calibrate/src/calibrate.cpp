@@ -11,7 +11,7 @@ void runCalibrationWorkflow(const std::filesystem::path &config_path) {
   McCalib::Calibration Calib(config_path);
   Calib.boardExtraction();
   LOG_INFO << "Board extraction done!";
-
+  
   // Intrinsic calibration of the cameras
   LOG_INFO << "Intrinsic calibration initiated";
   Calib.initIntrinsic();
@@ -76,6 +76,7 @@ void runCalibrationWorkflow(const std::filesystem::path &config_path) {
   Calib.saveCamerasParams();
   Calib.save3DObj();
   Calib.save3DObjPose();
+  Calib.saveBoardPoses();
   Calib.saveReprojectionErrorToFile();
   LOG_INFO << "mean reprojection error :: "
            << Calib.computeAvgReprojectionError() << std::endl;

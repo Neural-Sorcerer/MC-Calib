@@ -102,9 +102,7 @@ docker rm mc-calib-dev
 export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 ```
 
----
-
-## Usage
+## Repository Usage
 
 ### Calibration Procedure
 
@@ -133,7 +131,7 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
    If the boards have all the same square size, you just need to specify it in `square_size` and leave `square_size_per_board` empty. If each board has a different size, specify it in `square_size_per_board`. For instance, `square_size_per_board: [1, 25]` means that the first and second boards are composed of square of size `0.1cm` and `0.25cm` respectively. Note that the square size can be in any unit you prefer (m, cm, inch, etc.) and the resulting calibration will also be expressed in this unit.
 
-4. **Acquire your images**
+4. **Prepare your images**
 
    MC-Calib has been designed for synchronized cameras, therefore, you have to make sure that all the cameras in the rig capture images at the exact same time. Additionally, this toolbox has been designed and tested for global shutter cameras, therefore we cannot guarantee highly accurate results if you are using rolling shutter sensors. For high-quality calibration, make sure to have a limited quantity of motion blur during your sequence.
 
@@ -178,10 +176,15 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
    python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
    ```
 
-### Calibration File Sample
+### Configuration File Example
 
-For multiple camera calibration configuration examples see `configs/*.yml`.
-For easier start, just duplicate the most relevant setup and fill with details.
+You can find premaded configuration files for multi-camera calibration in the `configs/*.yml` directory.
+
+To get started quickly:
+
+1. Choose the example that matches your setup.
+2. Duplicate the file.
+3. Edit it with your specific camera and board settings.
 
 ```bash
 ######################################## Boards Parameters ###################################################
@@ -208,6 +211,7 @@ refine_corner: 1            # activate or deactivate the corner refinement
 min_perc_pts: 0.5           # min percentage of points visible to assume a good detection
 
 cam_params_path: "None"     # file with cameras intrinsics to initialize the intrinsic, write "None" if no initialization available 
+fix_intrinsic: 0            # if 1 then the intrinsic parameters will not be estimated nor refined (initial value needed)
 
 ######################################## Images Parameters ###################################################
 root_path: "../data/Synthetic_calibration_image/Scenario_1/Images"
@@ -226,13 +230,16 @@ he_approach: 0              # 0: bootstrapped he technique, 1: traditional he
 save_path: "../data/Synthetic_calibration_image/Scenario_1/Images"
 save_detection: 1
 save_reprojection: 1
-camera_params_file_name: "camera_params_file_name.yaml" # "name.yml"
+camera_board_poses_index: [-1,-1]  # [cameraID, boardID], -1 means all IDs
+board_poses_file_name: "calibrated_boards_poses_data.yml"
+camera_params_file_name: "calibrated_cameras_data.yml"
 ```
 
-### Output Explanation
+### 📤 Output Explanation
 
-The calibration toolbox automatically outputs four ```*.yml``` files.</br>
-To illustrate them, we propose to display the results obtained from the calibration of a hybrid stereo-vision system.
+After running the calibration, the toolbox automatically generates six `*.yml` output files.</br>
+Python scripts for reading and processing these files can be found in the `python_utils` directory.</br>
+To help you understand these files, we provide an example using the results from calibrating a hybrid stereo-vision system.
 
 - **Camera parameters:** `calibrated_cameras_data.yml`
 
@@ -315,13 +322,49 @@ To illustrate them, we propose to display the results obtained from the calibrat
 
 - **Object's poses:** `calibrated_objects_pose_data.yml`
 
-   The pose of the object (for all frames where boards are visible) with respect to the reference camera is provided in this file as a 6xn array. Each row contains the Rodrigues angle-axis (3 floats) followed by the translation vector (3 floats).
+  The file provides the object's pose relative to the reference camera for each frame, where calibration boards are detected.</br>
+  The data is stored as a 6×N array, where each row represents:
+
+  - First 3 values: **Rotation** in Rodrigues angle-axis format (X, Y, Z)
+  - Next 3 values: **Translation vector** (X, Y, Z)
 
 - **Reprojection error log:** `reprojection_error_data.yml`
 
-   The reprojection error for each corner, camera and frame.
+  This file contains the reprojection error for each detected corner, organized by camera and frame.
 
-   Samples of python code to read these files are provided in ```python_utils```
+- **Pre-detected board corners (Input):** `detected_keypoints_data.yml`
+
+  This file stores keypoints detected from calibration boards in advance, allowing you to reuse them across multiple calibrations without repeating the detection step.
+
+  - **Purpose**:  
+    - Speeds up calibration by skipping keypoint detection from calibration boards.
+
+  - **Usage**:
+    - Automatically generated on the **first run** if it doesn't exist.
+    - Referenced using the `keypoints_path` field in the configuration file.
+    - Useful when running **multiple calibrations on the same data set** to save time.
+
+- **Board Poses (Output)** `calibrated_boards_poses_data.yml`
+
+  This is an output file that contains the poses of the calibration boards.
+
+  - **Purpose**:
+    - Stores the estimated pose of each calibration board relative to the cameras.
+    - Utilize for TV’s display‐board pose calibration.
+
+  - **Format**:
+    - Each pose is a 6-element vector:
+      - First 3 values: **Rotation** in Rodrigues angle-axis format.
+      - Last 3 values: **Translation vector**.
+    - Organized by **camera ID**, **board ID**, and **frame ID**.
+
+  - **Usage**:
+    - Controlled by the `board_poses_file_name` field in the configuration file.
+    - If set to `"None"` or left empty, this file will **not** be generated.
+    - To save specific board poses use filter `camera_board_poses_index: [cameraID, boardID]` with options:
+      - `[]` or `[-1,-1]` to save all poses
+      - `[2,1]` to save poses from `cameraID=2`, `boardID=1`
+      - `[1,-1]` to save poses from `cameraID=1`, where `-1` show that for all boardIDs.
 
 ## Datasets
 

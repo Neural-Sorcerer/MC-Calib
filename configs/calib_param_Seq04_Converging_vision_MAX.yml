@@ -41,6 +41,8 @@ he_approach: 0 # 0: bootstrapped he technique, 1: traditional he
 
 ######################################## Output Parameters ###################################################
 save_path: "../data/Real_Images/Seq04_Converging_vision"
-save_detection: 1
-save_reprojection: 1
-camera_params_file_name: "camera_params_file_name.yml"
+save_detection: 0
+save_reprojection: 0
+camera_board_poses_index: [-1,-1]  # [cameraID, boardID], -1 means all IDs
+board_poses_file_name: "calibrated_boards_poses_data.yml"
+camera_params_file_name: "calibrated_cameras_data.yml"
