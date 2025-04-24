@@ -79,7 +79,7 @@ mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc
 # 1. Modify the config file or use a prebuilt one by this path:
 /home/MC-Calib/configs/calib_param.yml
 
-# 2. Generate your own Charuco boards
+# 2. Generate your own ChArUco boards
 ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
 
 # 3. Run the calibration
@@ -104,11 +104,84 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 ## Repository Usage
 
-### Calibration Procedure
+### Gaze Data Collection Calibration Steps
 
-1. **Generate your own Charuco boards**
+1. **Generate ChArUco Boards**
 
-   If all your boards are similar (same number of squares in the x and y directions), you only need to specify the `number_x_square`, `number_y_square`, and `number_board`. Then you can run the Charuco board generator:
+   1.1. Define the board specifications in your configuration file (`calib_param.yml`):
+
+   ```yaml
+   number_board: 2
+   number_x_square: 8
+   number_y_square: 8
+   ```
+
+   1.2 Run the ChArUco board generator:
+
+   ```bash
+   ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
+   ```
+
+2. **Print ChArUco Boards**
+
+   After printing, ensure the board is mounted flat and securely, without any bends, curves, or surface waves.  
+   A perfectly flat board is essential for accurate corner detection and calibration results.
+
+3. **Collect Data for Calibration**
+
+   To use MC-Calib effectively, follow these guidelines when preparing your data:
+
+   - **Synchronized Capture**:  
+   All cameras must capture images at the **exact same time**. The toolbox assumes synchronized input from a multi-camera rig.
+
+   - **Global Shutter Recommended**:  
+   MC-Calib is designed and tested with **global shutter cameras**. Using **rolling shutter sensors** may lead to lower calibration accuracy due to motion distortion.
+
+   - **Minimize Motion Blur**:  
+   Ensure that motion blur is limited during capture. Clear, stable frames will significantly improve calibration quality.
+
+   - **Folder Structure**:  
+   Images from each camera should be stored in **separate folders** named with a common prefix and a 3-digit index (starting from `001`), for example `Cam_001`, `Cam_002`.
+
+   - **Image Structure**:  
+   Images at `Cam_001`, `Cam_002` should be stored with 6-digit index (starting from `000000`), for example `000000.png`, `000001.png`.
+
+   ```text
+   dataset/
+      ├── Cam_001/
+      │   ├── 000000.png
+      │   └── 000001.png
+      ├── Cam_002/
+      │   ├── 000000.png
+      ... └── 000001.png
+   ```
+
+4. **Set Up the Calibration Configuration File**
+
+   Customize the configuration file located at: `configs/calib_param.yml`  
+   Adjust its parameters to match your specific setup.
+
+5. **Run the Calibration**
+
+   Execute the calibration process using your configured parameters:
+
+   ```bash
+   ./apps/calibrate/calibrate ../configs/calib_param.yml
+   ```
+
+6. **Run Post-Calibration Analysis**
+
+   After calibration, you can analyze results such as reprojection error and pose consistency:
+
+   ```bash
+   python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+   ```
+
+### Calibration Procedure (optional)
+
+1. **Generate your own ChArUco Boards**
+
+   If all your boards are similar (same number of squares in the x and y directions), you only need to specify the `number_x_square`, `number_y_square`, and `number_board`. Then you can run the ChArUco board generator:
 
    ```bash
    ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
@@ -122,24 +195,24 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
    number_y_square_per_board: [3,4]
    ```
 
-   A sample of Charuco boards is provided in [board_samples](docs/board_samples).
+   A sample of ChArUco boards is provided in [board_samples](docs/board_samples).
    Note: the board images are saved to the root folder where the code is executed.
 
-2. **Print your boards**
+2. **Print your Boards**
 
-3. **Measure the size of the squares on your boards**
+3. **Measure the Size of the Squares on your Boards**
 
    If the boards have all the same square size, you just need to specify it in `square_size` and leave `square_size_per_board` empty. If each board has a different size, specify it in `square_size_per_board`. For instance, `square_size_per_board: [1, 25]` means that the first and second boards are composed of square of size `0.1cm` and `0.25cm` respectively. Note that the square size can be in any unit you prefer (m, cm, inch, etc.) and the resulting calibration will also be expressed in this unit.
 
-4. **Prepare your images**
+4. **Prepare your Images**
 
    MC-Calib has been designed for synchronized cameras, therefore, you have to make sure that all the cameras in the rig capture images at the exact same time. Additionally, this toolbox has been designed and tested for global shutter cameras, therefore we cannot guarantee highly accurate results if you are using rolling shutter sensors. For high-quality calibration, make sure to have a limited quantity of motion blur during your sequence.
 
-5. **Prepare your video sequences**
+5. **Prepare your Video Sequences**
 
    The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'.
 
-6. **Setup the configuration file for your system**
+6. **Setup the Configuration File for your System**
 
    - *Set the number of cameras and cameras' types:*
 
@@ -164,13 +237,13 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
       For a general calibration setup, for the sake of robustness, we recommend setting `min_perc_pts` to at least 0.4 (40% of the points of the board should appear to be considered). However, in the case of calibration of limited field-of-view overlapping with a single board, this parameter can be reduced significantly. Our automatic colinear points check should avoid most degenerated configurations.
       The provided example configuration files contain a few additional parameters which can be tuned. Letting these parameters by default should lead to a correct calibration of your system, but you can adjust them if needed. These parameters are quite self explicit and described in the configuration files.
 
-7. **Run the calibration**
+7. **Run the Calibration**
 
    ```bash
    ./apps/calibrate/calibrate ../configs/calib_param.yml
    ```
 
-8. **Run post-calibration analysis**
+8. **Run Post-Calibration Analysis**
 
    ```bash
    python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
