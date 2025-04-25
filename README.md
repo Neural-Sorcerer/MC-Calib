@@ -76,6 +76,9 @@ mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc
 #### 4. Quick Start
 
 ```bash
+# 0. Load data from the link below and insert into the `data` directory
+/home/MC-Calib/data/Real_Images/Seq04_Converging_vision/
+
 # 1. Modify the config file or use a prebuilt one by this path:
 /home/MC-Calib/configs/calib_param.yml
 
@@ -172,78 +175,6 @@ export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 6. **Run Post-Calibration Analysis**
 
    After calibration, you can analyze results such as reprojection error and pose consistency:
-
-   ```bash
-   python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
-   ```
-
-### Calibration Procedure (optional)
-
-1. **Generate your own ChArUco Boards**
-
-   If all your boards are similar (same number of squares in the x and y directions), you only need to specify the `number_x_square`, `number_y_square`, and `number_board`. Then you can run the ChArUco board generator:
-
-   ```bash
-   ./apps/create_charuco_boards/generate_charuco ../configs/calib_param.yml
-   ```
-
-   If each board has a specific format (different number of squares), then you need to specify it in the fields `number_x_square_per_board` and `number_y_square_per_board`. For instance, if you want to use two boards of size [10x3] and [5x4] respectively, you have to set:
-
-   ```text
-   number_board: 2 
-   number_x_square_per_board: [10,5]
-   number_y_square_per_board: [3,4]
-   ```
-
-   A sample of ChArUco boards is provided in [board_samples](docs/board_samples).
-   Note: the board images are saved to the root folder where the code is executed.
-
-2. **Print your Boards**
-
-3. **Measure the Size of the Squares on your Boards**
-
-   If the boards have all the same square size, you just need to specify it in `square_size` and leave `square_size_per_board` empty. If each board has a different size, specify it in `square_size_per_board`. For instance, `square_size_per_board: [1, 25]` means that the first and second boards are composed of square of size `0.1cm` and `0.25cm` respectively. Note that the square size can be in any unit you prefer (m, cm, inch, etc.) and the resulting calibration will also be expressed in this unit.
-
-4. **Prepare your Images**
-
-   MC-Calib has been designed for synchronized cameras, therefore, you have to make sure that all the cameras in the rig capture images at the exact same time. Additionally, this toolbox has been designed and tested for global shutter cameras, therefore we cannot guarantee highly accurate results if you are using rolling shutter sensors. For high-quality calibration, make sure to have a limited quantity of motion blur during your sequence.
-
-5. **Prepare your Video Sequences**
-
-   The images extracted from each camera have to be stored in different folders with a common prefix followed by a three digits index (starting from 001). For instance, if two cameras are used, the folder can be called: 'Cam_001' and 'Cam_002'.
-
-6. **Setup the Configuration File for your System**
-
-   - *Set the number of cameras and cameras' types:*
-
-      The number of cameras to be calibrated have to be specified in the field `number_camera`.
-      If you are calibrating a homogeneous camera system you can specify the camera type with `distortion_model`: `0` signifies that all your cameras are perspective (Brown distortion model) and a `1` will use the Kannala distortion model (fisheye).
-      If you are calibrating a hybrid vision system (composed of both fisheye and perspective cameras), you need to specify the type of distortion model you wish to use in the vector `distortion_per_camera`.
-
-   - *Set the image path:*
-
-      You need to specify the folder where the images have been stored in the field `root_path` for instance `"../Data/Image_folder/"`.
-
-   - *Set the outputs:*
-
-      By default, MC-Calib will generate the camera calibration results, the reprojection error log, the 3D object structure, detected keypoints, and the pose of the object for each frame where it has been detected. Additionally, you can save the detection and reprojection images by setting `save_detection` and `save_reprojection` to `1`.
-
-   - *Using only certain boards:*
-
-      If you prepared a large number of calibration objects but only a few appear in your calibration sequence, you can specify the list of boards' indexes in `boards_index`. Specifying the board indexes avoids trying to detect all the boards and will speed up your calibration.
-
-   - *Advanced setup:*
-
-      For a general calibration setup, for the sake of robustness, we recommend setting `min_perc_pts` to at least 0.4 (40% of the points of the board should appear to be considered). However, in the case of calibration of limited field-of-view overlapping with a single board, this parameter can be reduced significantly. Our automatic colinear points check should avoid most degenerated configurations.
-      The provided example configuration files contain a few additional parameters which can be tuned. Letting these parameters by default should lead to a correct calibration of your system, but you can adjust them if needed. These parameters are quite self explicit and described in the configuration files.
-
-7. **Run the Calibration**
-
-   ```bash
-   ./apps/calibrate/calibrate ../configs/calib_param.yml
-   ```
-
-8. **Run Post-Calibration Analysis**
 
    ```bash
    python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
