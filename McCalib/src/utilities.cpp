@@ -20,7 +20,7 @@ convertVecStrToVecPath(const std::vector<std::string> &input) {
   return out;
 }
 
-#if (defined(CV_VERSION_MAJOR) && CV_VERSION_MAJOR <= 4 &&                     \
+#if (defined(CV_VERSION_MAJOR) && CV_VERSION_MAJOR <= 4 && \
      defined(CV_VERSION_MINOR) && CV_VERSION_MINOR < 7)
 
 std::map<int, cv::Ptr<cv::aruco::CharucoBoard>>
@@ -82,17 +82,24 @@ std::map<int, cv::Ptr<cv::aruco::CharucoBoard>>
 createCharucoBoards(const unsigned int num_board,
                     const std::vector<int> &number_x_square_per_board,
                     const std::vector<int> &number_y_square_per_board,
-                    const float length_square, const float length_marker,
+                    const float length_square,
+                    const float length_marker,
                     const cv::aruco::Dictionary &dict) {
   std::map<int, cv::Ptr<cv::aruco::CharucoBoard>> charuco_boards;
   int offset_count = 0;
+  
   for (std::size_t i = 0; i < num_board; i++) {
     if (i == 0) {
       // if it is the first board then just use the standard idx
       charuco_boards[i] = cv::makePtr<cv::aruco::CharucoBoard>(
-          cv::aruco::CharucoBoard(cv::Size(number_x_square_per_board[i],
-                                           number_y_square_per_board[i]),
-                                  length_square, length_marker, dict));
+          cv::aruco::CharucoBoard(
+            cv::Size(
+              number_x_square_per_board[i],
+              number_y_square_per_board[i]
+            ),
+            length_square,
+            length_marker,
+            dict));
     } else {
       int id_offset = charuco_boards[i - 1]->getIds().size() + offset_count;
       offset_count = id_offset;
@@ -102,9 +109,15 @@ createCharucoBoards(const unsigned int num_board,
       std::iota(cur_ids.begin(), cur_ids.end(), id_offset);
 
       charuco_boards[i] = cv::makePtr<cv::aruco::CharucoBoard>(
-          cv::aruco::CharucoBoard(cv::Size(number_x_square_per_board[i],
-                                           number_y_square_per_board[i]),
-                                  length_square, length_marker, dict, cur_ids));
+        cv::aruco::CharucoBoard(
+          cv::Size(
+            number_x_square_per_board[i],
+            number_y_square_per_board[i]
+          ),
+          length_square,
+          length_marker,
+          dict,
+          cur_ids));
     }
   }
   assert(charuco_boards.size() == num_board);
@@ -115,23 +128,34 @@ std::vector<cv::Mat>
 createCharucoBoardsImages(const unsigned int num_board,
                           const std::vector<int> &number_x_square_per_board,
                           const std::vector<int> &number_y_square_per_board,
-                          const float length_square, const float length_marker,
+                          const float length_square,
+                          const float length_marker,
                           const std::vector<int> &resolution_x_per_board,
                           const std::vector<int> &resolution_y_per_board) {
   const cv::aruco::Dictionary dict =
       cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_1000);
   const std::map<int, cv::Ptr<cv::aruco::CharucoBoard>> charuco_boards =
-      createCharucoBoards(num_board, number_x_square_per_board,
-                          number_y_square_per_board, length_square,
-                          length_marker, dict);
+      createCharucoBoards(
+        num_board,
+        number_x_square_per_board,
+        number_y_square_per_board,
+        length_square,
+        length_marker,
+        dict
+      );
 
   std::vector<cv::Mat> charuco_boards_images;
   charuco_boards_images.reserve(num_board);
+
   for (auto const &[i, charuco_board] : charuco_boards) {
     cv::Mat board_image;
     charuco_board->generateImage(
-        cv::Size(resolution_x_per_board[i], resolution_y_per_board[i]),
-        board_image, 10, 1);
+      cv::Size(
+        resolution_x_per_board[i],
+        resolution_y_per_board[i]
+      ),
+      board_image, 10, 1
+      );
     charuco_boards_images.push_back(board_image);
   }
 
