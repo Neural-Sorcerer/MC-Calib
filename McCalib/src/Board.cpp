@@ -19,8 +19,10 @@ namespace McCalib {
  * @param config_path path to the configuration file
  * @param board_idx index of the board
  */
-Board::Board(const std::filesystem::path &config_path, const int board_idx,
+Board::Board(const std::filesystem::path &config_path,
+             const int board_idx,
              const cv::Ptr<cv::aruco::CharucoBoard> charuco_board) {
+  // Read the parameters from the configuration file
   std::vector<int> number_x_square_per_board, number_y_square_per_board;
   std::vector<double> square_size_per_board;
   std::vector<int> boards_index;
@@ -29,10 +31,12 @@ Board::Board(const std::filesystem::path &config_path, const int board_idx,
   const bool is_file_available = std::filesystem::exists(config_path) &&
                                  config_path.has_filename() &&
                                  config_path.extension() == ".yml";
+  
   if (!is_file_available) {
     LOG_FATAL << "Config path '" << config_path << "' doesn't exist.";
     return;
   }
+
   fs.open(config_path, cv::FileStorage::READ);
   fs["number_board"] >> nb_board;
   fs["number_x_square_per_board"] >> number_x_square_per_board;
