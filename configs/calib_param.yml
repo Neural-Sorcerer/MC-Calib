@@ -7,14 +7,14 @@ resolution_x: 4950   # horizontal resolution in pixel
 resolution_y: 3510   # vertical resolution in pixel
 length_square: 0.04  # parameters on the marker (can be kept as it is)
 length_marker: 0.03  # parameters on the marker (can be kept as it is)
-number_board: 2      # number of boards used for calibration (for overlapping camera 1 is enough ...)
-boards_index: []     # leave it empty [] if the board index are ranging from zero to number_board example of usage boards_index: [5,10] <-- only two board with index 5/10
-square_size: 0    # size of each square of the board in cm/mm/whatever you want
+number_board: 1      # number of boards used for calibration (for overlapping camera 1 is enough ...)
+boards_index: [0]    # leave it empty [] if the board index are ranging from zero to number_board example of usage boards_index: [5,10] <-- only two board with index 5/10
+square_size: 0.053   # size of each square of the board in cm/mm/whatever you want
 
 ############# Boards Parameters for different board size (leave empty if all boards have the same size) #################
-number_x_square_per_board: [7,7]
-number_y_square_per_board: [5,5]
-square_size_per_board: [0.053, 0.12]  # [0.053, 0.12]m [0.53, 1.2]dm [5.3, 12]cm [53, 120]mm
+number_x_square_per_board: []
+number_y_square_per_board: []
+square_size_per_board: []  # [0.053, 0.12]m [0.53, 1.2]dm [5.3, 12]cm [53, 120]mm
 
 ######################################## Camera Parameters ###################################################
 distortion_model: 0        # 0:Brown (perspective) // 1: Kannala (fisheye)
@@ -46,3 +46,7 @@ save_reprojection: 1
 camera_board_poses_index: [-1,-1]  # [cameraID, boardID], -1 means all IDs
 board_poses_file_name: "calibrated_boards_poses_data.yml"
 camera_params_file_name: "calibrated_cameras_data.yml"
+
+######################################## Rigidity check parameters ###################################################
+enable_rigidity_check: 1  # Enable rigidity check
+rigidity_threshold: 0.05  # Threshold for rigidity check in meters

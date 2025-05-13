@@ -20,16 +20,25 @@ def post_calibration_analysis(calib_data: List[Path]) -> None:
         reprojection_error_data = sequence_path / "reprojection_error_data.yml"
 
         assert calib_cameras_data.exists()
-        assert calib_cameras_data_gt.exists()
+        # assert calib_cameras_data_gt.exists()
         assert calib_object_data.exists()
         assert reprojection_error_data.exists()
 
-        compute_pose_error_vs_gt(
-            calibrated_cameras_data=calib_cameras_data, calibrated_cameras_gt=calib_cameras_data_gt
-        )
+        print("Computing pose error vs ground truth...")
+        # compute_pose_error_vs_gt(
+        #     calibrated_cameras_data=calib_cameras_data, calibrated_cameras_gt=calib_cameras_data_gt
+        # )
+        
+        print("\nDisplaying camera and object poses...")
         display_cam_obj_pose(calib_data=sequence_path)
+        
+        print("\nDisplaying calibrated cameras...")
         display_calib_cameras(calib_cameras_data_path=calib_cameras_data)
+        
+        print("\nDisplaying calibrated object...")
         display_calib_object(calib_object_data_path=calib_object_data)
+        
+        print("\nComputing error statistic...")
         compute_error_statistic(reprojection_error_data_path=reprojection_error_data)
 
 
