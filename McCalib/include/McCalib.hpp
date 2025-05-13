@@ -88,6 +88,10 @@ public:
   // fix intrinsic parameters
   int fix_intrinsic_ = 0;
 
+  // rigidity check parameters
+  float rigidity_threshold_ = 0.05f; // threshold for rigidity check (in meters)
+  bool enable_rigidity_check_ = true; // enable/disable rigidity check
+
   // Data structures
   std::map<int, std::shared_ptr<BoardObs>>
       board_observations_; // Observation of the boards (2d points)
@@ -247,9 +251,14 @@ public:
   void saveDetectionImagesAllCam();
   void saveReprojectionErrorToFile();
 
+  // Rigidity check functions
+  bool checkBoardPairRigidity(const std::pair<int, int>& board_pair_idx,
+                              const std::vector<cv::Mat>& poses);
+
 private:
   void detectBoardsInImageWithCamera(
-      const std::string &frame_path, const int cam_idx,
+      const std::string &frame_path,
+      const int cam_idx,
       const int frame_idx); // detect the boards in the input frame
 
   std::mutex insert_new_board_lock_;

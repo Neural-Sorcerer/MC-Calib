@@ -79,6 +79,14 @@ Calibration::Calibration(const std::filesystem::path &config_path) {
   fs["he_approach"] >> he_approach_;
   fs["fix_intrinsic"] >> fix_intrinsic_;
 
+  // Read rigidity check parameters if they exist in the config file
+  if (!fs["enable_rigidity_check"].empty()) {
+    fs["enable_rigidity_check"] >> enable_rigidity_check_;
+  }
+  if (!fs["rigidity_threshold"].empty()) {
+    fs["rigidity_threshold"] >> rigidity_threshold_;
+  }
+
   fs.release(); // close the input file
 
   // Check if multi-size boards are used or not
@@ -98,6 +106,9 @@ Calibration::Calibration(const std::filesystem::path &config_path) {
            << "   Nb of Boards : " << nb_board_
            << "   Refined Corners : " << refine_corner_
            << "   Distortion mode : " << distortion_model;
+
+  LOG_INFO << "Rigidity check enabled: " << (enable_rigidity_check_ ? "Yes" : "No")
+           << "   Rigidity threshold: " << rigidity_threshold_ << " meters";
 
   // check if the save dir exist and create it if it does not
   if (!std::filesystem::exists(save_path_) && save_path_.has_filename()) {
@@ -543,7 +554,7 @@ void Calibration::saveBoardPoses() {
     cv::Rodrigues(rvec, R);
 
     // Write data
-    file << obs->camera_id_ << " " 
+    file << obs->camera_id_ << " "
          << obs->board_id_ << " "
          << obs->frame_id_ << " ";
     
@@ -904,6 +915,84 @@ void Calibration::initInterTransform(
 }
 
 /**
+ * @brief Check if a pair of boards are rigidly connected
+ *
+ * This function checks if the relative transformation between two boards
+ * is consistent across multiple observations. If the transformation is
+ * consistent (within the threshold), the boards are considered rigidly connected.
+ *
+ * @param board_pair_idx pair of board indices
+ * @param poses vector of relative poses between the boards
+ * @return true if the boards are rigidly connected, false otherwise
+ */
+bool Calibration::checkBoardPairRigidity(const std::pair<int, int>& board_pair_idx,
+                                         const std::vector<cv::Mat>& poses) {
+  if (poses.size() < 2) {
+    // Not enough observations to determine rigidity
+    return true;
+  }
+
+  // Extract translation and rotation from each pose
+  std::vector<cv::Vec3d> translations;
+  std::vector<cv::Vec3d> rotations;
+  translations.reserve(poses.size());
+  rotations.reserve(poses.size());
+
+  for (const auto& pose : poses) {
+    cv::Mat R, T;
+    Proj2RT(pose, R, T);
+
+    // Store translation
+    translations.emplace_back(T.at<double>(0), T.at<double>(1), T.at<double>(2));
+
+    // Store rotation vector
+    rotations.emplace_back(R.at<double>(0), R.at<double>(1), R.at<double>(2));
+  }
+
+  // Calculate variance of translations
+  cv::Vec3d mean_translation(0, 0, 0);
+  for (const auto& t : translations) {
+    mean_translation += t;
+  }
+  mean_translation = mean_translation * (1.0 / translations.size());
+
+  double translation_variance = 0.0;
+  for (const auto& t : translations) {
+    cv::Vec3d diff = t - mean_translation;
+    translation_variance += diff.dot(diff);
+  }
+  translation_variance /= translations.size();
+
+  // Calculate variance of rotations
+  cv::Vec3d mean_rotation(0, 0, 0);
+  for (const auto& r : rotations) {
+    mean_rotation += r;
+  }
+  mean_rotation = mean_rotation * (1.0 / rotations.size());
+
+  double rotation_variance = 0.0;
+  for (const auto& r : rotations) {
+    cv::Vec3d diff = r - mean_rotation;
+    rotation_variance += diff.dot(diff);
+  }
+  rotation_variance /= rotations.size();
+
+  // Check if the variance is below the threshold
+  const double translation_threshold = rigidity_threshold_ * rigidity_threshold_; // squared threshold
+  const double rotation_threshold = 0.01; // approximately 0.1 radians squared
+
+  bool is_rigid = (translation_variance < translation_threshold) &&
+                  (rotation_variance < rotation_threshold);
+
+  LOG_DEBUG << "Board pair (" << board_pair_idx.first << ", " << board_pair_idx.second
+            << ") - Translation variance: " << translation_variance
+            << ", Rotation variance: " << rotation_variance
+            << ", Is rigid: " << (is_rigid ? "Yes" : "No");
+
+  return is_rigid;
+}
+
+/**
  * @brief Initialize the graph with the poses between boards
  *
  */
@@ -921,8 +1010,15 @@ void Calibration::initInterBoardsGraph() {
   for (const auto &it : board_pose_pairs_) {
     const std::pair<int, int> &board_pair_idx = it.first;
     const std::vector<cv::Mat> &board_poses_temp = it.second;
-    covis_boards_graph_.addEdge(board_pair_idx.first, board_pair_idx.second,
-                                ((double)1 / board_poses_temp.size()));
+
+    // Only add an edge if rigidity check is disabled or the boards are rigidly connected
+    if (!enable_rigidity_check_ || checkBoardPairRigidity(board_pair_idx, board_poses_temp)) {
+      covis_boards_graph_.addEdge(board_pair_idx.first, board_pair_idx.second,
+                                  ((double)1 / board_poses_temp.size()));
+    } else {
+      LOG_INFO << "Boards " << board_pair_idx.first << " and " << board_pair_idx.second
+               << " are not rigidly connected. Not adding edge to graph.";
+    }
   }
 }
 
