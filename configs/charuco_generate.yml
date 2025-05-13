@@ -1,0 +1,16 @@
+%YAML:1.0
+
+######################################## Boards Parameters ###################################################
+number_board: 5      # number of boards used for calibration (for overlapping camera 1 is enough ...)
+number_x_square: 7   # number of squares in the X direction
+number_y_square: 7   # number of squares the Y direction
+resolution_x: 2000   # horizontal resolution in pixel
+resolution_y: 2000   # vertical resolution in pixel
+length_square: 0.04  # parameters on the marker (can be kept as it is)
+length_marker: 0.03  # parameters on the marker (can be kept as it is)
+
+# Margin parameters
+margin_ratio: 0.05   # 5% margin around the board
+margin_color_r: 255    # Red component (0-255)
+margin_color_g: 255  # Green component (0-255)
+margin_color_b: 255  # Blue component (0-255)
