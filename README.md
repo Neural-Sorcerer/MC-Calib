@@ -1,6 +1,6 @@
 # 📚 About MC-Calib
 
-**MC-Calib** is a generic and robust calibration toolbox for multi-camera systems, described in the following paper
+**MC-Calib** is a generic and robust calibration toolbox for multi-camera systems, described in the following paper:
 
 > 📄 Paper: [MC-Calib: A Generic and Robust Calibration Toolbox for Multi-Camera Systems](docs/MC-Calib.pdf)
 
