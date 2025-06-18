@@ -6,11 +6,11 @@ number_x_square: 7   # number of squares in the X direction
 number_y_square: 7   # number of squares the Y direction
 resolution_x: 2000   # horizontal resolution in pixel
 resolution_y: 2000   # vertical resolution in pixel
-length_square: 0.04  # parameters on the marker (can be kept as it is)
-length_marker: 0.03  # parameters on the marker (can be kept as it is)
+length_square: 0.04  # Length of one full square (e.g., ChArUco square) in meters (100%)
+length_marker: 0.03  # Length of the inner marker (e.g., ArUco inside the square) in meters (75%)
 
 # Margin parameters
 margin_ratio: 0.05   # 5% margin around the board
-margin_color_r: 255    # Red component (0-255)
+margin_color_r: 255  # Red component (0-255)
 margin_color_g: 255  # Green component (0-255)
 margin_color_b: 255  # Blue component (0-255)
