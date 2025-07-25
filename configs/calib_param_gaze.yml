@@ -1,0 +1,50 @@
+%YAML:1.0
+
+######################################## Boards Parameters ###################################################
+number_x_square: 7   # number of squares in the X direction
+number_y_square: 7   # number of squares the Y direction
+length_square: 0.04  # Length of one full square (e.g., ChArUco square) in meters (100%)
+length_marker: 0.03  # Length of the inner marker (e.g., ArUco inside the square) in meters (75%)
+number_board: 2      # number of boards used for calibration (for overlapping camera 1 is enough ...)
+boards_index: [0,1]  # leave it empty [] if the board index are ranging from zero to number_board example of usage boards_index: [5,10] <-- only two board with index 5/10
+square_size: 100     # size of each square of the board in m/cm/mm/whatever you want [0.1]m [1]dm [10]cm [100]mm
+
+############# Boards Parameters for different board size (leave empty if all boards have the same size) #################
+number_x_square_per_board: []
+number_y_square_per_board: []
+square_size_per_board: []
+
+######################################## Camera Parameters ###################################################
+distortion_model: 0        # 0:Brown (perspective) // 1: Kannala (fisheye)
+distortion_per_camera: [1,1,1,1,0,0,0,0]  # specify the model per camera, leave "distortion_per_camera" empty [] if they all follow the same model (make sure that the vector is as long as cameras nb)
+number_camera: 8           # number of cameras in the rig to calibrate
+refine_corner: 1           # activate or deactivate the corner refinement
+min_perc_pts: 0.2          # min percentage of points visible to assume a good detection
+
+cam_params_path: "../data/gaze/calibrated_cameras_data.yml"    # "../../Images_Plan/calibrated_cameras_data.yml"  # file with cameras intrinsics to initialize the intrinsic, write "None" if no initialization available 
+fix_intrinsic: 1           # if 1 then the intrinsic parameters will not be estimated nor refined (initial value needed)
+
+######################################## Images Parameters ###################################################
+root_path: "../data/gaze" #"../../Images_Sim1Cam3Board/" # "../../Images_NonOver3/"  "../../Images_Cube/" "../../Images_Plan/" "../../Images_NonOver6Cam/"
+cam_prefix: "Cam_"
+keypoints_path: "None" #"../data/gaze/detected_keypoints_data.yml" 
+
+######################################## Optimization Parameters ###################################################
+quaternion_averaging: 1    # use Quaternion Averaging or median for average rotation
+ransac_threshold: 10       # RANSAC threshold in pixel (keep it high just to remove strong outliers)
+number_iterations: 1000    # Max number of iterations for the non linear refinement
+
+######################################## Hand-eye method #############################################
+he_approach: 0 # 0: bootstrapped he technique, 1: traditional he
+
+######################################## Output Parameters ###################################################
+save_path: "../data/gaze"
+save_detection: 1
+save_reprojection: 1
+camera_board_poses_index: [-1,-1]  # [cameraID, boardID], -1 means all IDs
+board_poses_file_name: "calibrated_boards_poses_data.yml"
+camera_params_file_name: "calibrated_cameras_data.yml"
+
+######################################## Rigidity check parameters ###################################################
+enable_rigidity_check: 1  # Enable rigidity check
+rigidity_threshold: 0.05  # Threshold for rigidity check in meters
