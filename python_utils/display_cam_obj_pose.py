@@ -10,32 +10,34 @@ from display_calib_cameras import add_camera_to_subplot
 from utils import axis_equal_3d
 
 
-def display_cam_obj_pose(calib_data: Path) -> None:
+def display_cam_obj_pose(save_dir: Path,
+                         calib_cameras_data: Path,
+                         calib_object_data: Path,
+                         calib_object_pose_data: Path) -> None:
     # open and display the calibrated camera system
-    path_calib_results = calib_data / "calibrated_cameras_data.yml"
-    fs = cv2.FileStorage(str(path_calib_results), cv2.FILE_STORAGE_READ)
+    fs = cv2.FileStorage(str(calib_cameras_data), cv2.FILE_STORAGE_READ)
     num_cameras = int(fs.getNode("nb_camera").real())
+    
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
     ax.set_title("Calibration Result")
-    for i in range(num_cameras):
-        cam_id = "camera_" + str(i)
-        cam_pose = fs.getNode(cam_id).getNode("camera_pose_matrix").mat()
+    
+    for cam_idx in range(num_cameras):
+        cam_name = "camera_" + str(cam_idx)
+        cam_pose = fs.getNode(cam_name).getNode("camera_pose_matrix").mat()
         cam_trans = np.asarray([cam_pose[0:3, 3]]).T
         cam_rot = cam_pose[0:3, 0:3]
         add_camera_to_subplot(ax, cam_rot, cam_trans, cam_size=0.1, cam_edge=1)
-        print(cam_pose)
+        # print(f"\nCamera {cam_idx}:\n{cam_pose}")
 
     # open the 3D object
-    path_object_results = calib_data / "calibrated_objects_data.yml"
-    fs = cv2.FileStorage(str(path_object_results), cv2.FILE_STORAGE_READ)
+    fs = cv2.FileStorage(str(calib_object_data), cv2.FILE_STORAGE_READ)
     obj_id = "object_" + str(0)
     obj_mat = fs.getNode(obj_id).getNode("points").mat()
     obj_pts = obj_mat[:3, :]
 
     # open the pose of 3D object
-    path_object_results = calib_data / "calibrated_objects_pose_data.yml"
-    fs = cv2.FileStorage(str(path_object_results), cv2.FILE_STORAGE_READ)
+    fs = cv2.FileStorage(str(calib_object_pose_data), cv2.FILE_STORAGE_READ)
     pose_mat = fs.getNode(obj_id).getNode("poses").mat()
 
     step = 50
@@ -54,7 +56,7 @@ def display_cam_obj_pose(calib_data: Path) -> None:
 
     axis_equal_3d(ax)
     plt.show()
-    plt.savefig(calib_data / "cam_obj_pose.png")
+    plt.savefig(save_dir / "cam_obj_pose.png")
     plt.close()
 
 

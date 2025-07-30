@@ -27,18 +27,18 @@ def verify_num_camera_groups(fs: cv2.FileStorage) -> None:
 
 
 def visualize_and_save_results(
-    list_mean_error_frame: List[float], reprojection_error_data_path: Path
+    list_mean_error_frame: List[float], save_dir: Path
 ) -> None:
     plt.bar(range(0, len(list_mean_error_frame)), list_mean_error_frame)
     plt.xlabel("frame")
     plt.ylabel("Mean reprojection error")
     plt.title("Mean error per frame")
     plt.show()
-    plt.savefig(reprojection_error_data_path / "mean_reprojection_error_per_frame.png")
+    plt.savefig(save_dir / "mean_reprojection_error_per_frame.png")
     plt.close()
 
 
-def compute_error_statistic(reprojection_error_data_path: Path) -> None:
+def compute_error_statistic(save_dir: Path, reprojection_error_data_path: Path) -> None:
     camera_color = generate_color_per_camera()
 
     fs = cv2.FileStorage(str(reprojection_error_data_path), cv2.FILE_STORAGE_READ)
@@ -74,7 +74,7 @@ def compute_error_statistic(reprojection_error_data_path: Path) -> None:
             list_mean_error.append(0.0)
             list_color.append(camera_color[camera_list[0][0]])
 
-    visualize_and_save_results(list_mean_error_frame, reprojection_error_data_path.parent)
+    visualize_and_save_results(list_mean_error_frame, save_dir)
 
 
 if __name__ == "__main__":

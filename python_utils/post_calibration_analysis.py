@@ -11,35 +11,44 @@ from display_cam_obj_pose import display_cam_obj_pose
 
 def post_calibration_analysis(calib_data: List[Path]) -> None:
     for sequence_path in calib_data:
-
-        assert sequence_path.exists()
-
         calib_cameras_data = sequence_path / "calibrated_cameras_data.yml"
-        calib_cameras_data_gt = sequence_path.parent / "GroundTruth.yml"
         calib_object_data = sequence_path / "calibrated_objects_data.yml"
+        calib_object_pose_data = sequence_path / "calibrated_objects_pose_data.yml"
         reprojection_error_data = sequence_path / "reprojection_error_data.yml"
-
+        # calib_cameras_data_gt = sequence_path.parent / "GroundTruth.yml"
+        
+        assert sequence_path.exists()
         assert calib_cameras_data.exists()
-        # assert calib_cameras_data_gt.exists()
         assert calib_object_data.exists()
+        assert calib_object_pose_data.exists()
         assert reprojection_error_data.exists()
+        # assert calib_cameras_data_gt.exists()
 
-        print("Computing pose error vs ground truth...")
+        output = sequence_path / "visualization"
+        output.mkdir(parents=True, exist_ok=True)
+        
+        # print("Computing pose error vs ground truth... skipped")
         # compute_pose_error_vs_gt(
         #     calibrated_cameras_data=calib_cameras_data, calibrated_cameras_gt=calib_cameras_data_gt
         # )
         
         print("\nDisplaying camera and object poses...")
-        display_cam_obj_pose(calib_data=sequence_path)
+        display_cam_obj_pose(save_dir=output,
+                             calib_cameras_data=calib_cameras_data,
+                             calib_object_data=calib_object_data,
+                             calib_object_pose_data=calib_object_pose_data)
         
         print("\nDisplaying calibrated cameras...")
-        display_calib_cameras(calib_cameras_data_path=calib_cameras_data)
+        display_calib_cameras(save_dir=output,
+                              calib_cameras_data_path=calib_cameras_data)
         
         print("\nDisplaying calibrated object...")
-        display_calib_object(calib_object_data_path=calib_object_data)
+        display_calib_object(save_dir=output,
+                             calib_object_data_path=calib_object_data)
         
         print("\nComputing error statistic...")
-        compute_error_statistic(reprojection_error_data_path=reprojection_error_data)
+        compute_error_statistic(save_dir=output,
+                                reprojection_error_data_path=reprojection_error_data)
 
 
 if __name__ == "__main__":

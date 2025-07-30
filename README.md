@@ -89,7 +89,7 @@ mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc
 ./apps/calibrate/calibrate ../configs/calib_param.yml
 
 # 4. Run post-calibration analysis
-python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+python3 ./python_utils/post_calibration_analysis.py -d ./data/gaze2/
 ```
 
 #### 5. Container Management (optional)
@@ -98,11 +98,17 @@ python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.
 # Resume container session
 docker start -ai mc-calib-dev
 
+# Move to working directory
+cd build && make -j$(nproc)
+
 # Remove container completely
 docker rm mc-calib-dev
 
 # Optional: Add color to the terminal prompt inside the container
 export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
+
+# Optional: Remove a folder
+sudo rm -rf /path/to/your/folder
 ```
 
 ## Repository Usage

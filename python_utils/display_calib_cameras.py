@@ -246,7 +246,7 @@ def add_camera_to_subplot(
     plot_camera(ax, coords, cam_color, cam_edge)
 
 
-def display_calib_cameras(calib_cameras_data_path: Path) -> None:
+def display_calib_cameras(save_dir: Path, calib_cameras_data_path: Path) -> None:
     fs = cv2.FileStorage(str(calib_cameras_data_path), cv2.FILE_STORAGE_READ)
     num_cameras = int(fs.getNode("nb_camera").real())
 
@@ -256,16 +256,16 @@ def display_calib_cameras(calib_cameras_data_path: Path) -> None:
     ax.set_title("Calibration Result")
 
     for cam_idx in range(num_cameras):
-        cam_name: str = f"camera_{cam_idx}"
-        cam_pose: np.ndarray = fs.getNode(cam_name).getNode("camera_pose_matrix").mat()
-        cam_trans: np.ndarray = np.asarray([cam_pose[0:3, 3]]).T
-        cam_rot: np.ndarray = cam_pose[0:3, 0:3]
+        cam_name = f"camera_{cam_idx}"
+        cam_pose = fs.getNode(cam_name).getNode("camera_pose_matrix").mat()
+        cam_trans = np.asarray([cam_pose[0:3, 3]]).T
+        cam_rot = cam_pose[0:3, 0:3]
         add_camera_to_subplot(ax, cam_rot, cam_trans, cam_size=0.5, cam_edge=2)
-        print(cam_pose)
+        print(f"\nCamera {cam_idx}:\n{cam_pose}")
 
     prepare_figure(ax)
     plt.show()
-    plt.savefig(calib_cameras_data_path.parent / "cameras_calib.png")
+    plt.savefig(save_dir / "cameras_calib.png")
     plt.close()
 
 

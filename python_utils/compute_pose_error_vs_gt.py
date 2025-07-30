@@ -192,7 +192,7 @@ def compute_pose_error_vs_gt(
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
     plt.show()
-    plt.savefig(calibrated_cameras_data.parent / "pose_error_vs_gt.png")
+    plt.savefig(calibrated_cameras_data.parent / "visualization" / "pose_error_vs_gt.png")
     plt.close()
 
 

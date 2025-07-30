@@ -8,7 +8,7 @@ import numpy as np
 from utils import prepare_figure
 
 
-def display_calib_object(calib_object_data_path: Path) -> None:
+def display_calib_object(save_dir: Path, calib_object_data_path: Path) -> None:
     fs = cv2.FileStorage(str(calib_object_data_path), cv2.FILE_STORAGE_READ)
     obj_id = "object_" + str(0)
     obj_mat = fs.getNode(obj_id).getNode("points").mat()
@@ -26,7 +26,7 @@ def display_calib_object(calib_object_data_path: Path) -> None:
 
     prepare_figure(ax)
     plt.show()
-    plt.savefig(calib_object_data_path.parent / "calibrated_object.png")
+    plt.savefig(save_dir / "calibrated_object.png")
     plt.close()
 
 
