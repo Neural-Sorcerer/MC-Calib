@@ -183,7 +183,7 @@ sudo rm -rf /path/to/your/folder
    After calibration, you can analyze results such as reprojection error and pose consistency:
 
    ```bash
-   python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param.yml
+   python3 python_utils/post_calibration_analysis.py -d save_path_from_calib_param
    ```
 
 ### Configuration File Example

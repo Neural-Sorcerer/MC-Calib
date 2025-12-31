@@ -254,13 +254,14 @@ def display_calib_cameras(save_dir: Path, calib_cameras_data_path: Path) -> None
     ax: Axes = fig.add_subplot(projection="3d")
     ax.set_proj_type("ortho")
     ax.set_title("Calibration Result")
+    ax.view_init(elev=-20, azim=-90)
 
     for cam_idx in range(num_cameras):
         cam_name = f"camera_{cam_idx}"
         cam_pose = fs.getNode(cam_name).getNode("camera_pose_matrix").mat()
         cam_trans = np.asarray([cam_pose[0:3, 3]]).T
         cam_rot = cam_pose[0:3, 0:3]
-        add_camera_to_subplot(ax, cam_rot, cam_trans, cam_size=0.5, cam_edge=2)
+        add_camera_to_subplot(ax, cam_rot, cam_trans, cam_size=0.5*100, cam_edge=0.5)
         print(f"\nCamera {cam_idx}:\n{cam_pose}")
 
     prepare_figure(ax)

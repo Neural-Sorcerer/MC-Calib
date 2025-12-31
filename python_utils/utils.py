@@ -21,3 +21,6 @@ def prepare_figure(ax: Axes) -> None:
     ax.set_xlabel("x (cm)", fontsize=20)
     ax.set_ylabel("y (cm)", fontsize=20)
     ax.set_zlabel("z (cm)", fontsize=20)
+    ax.set_xlim(-1500, 1500)
+    ax.set_ylim(-1000, 1000)
+    ax.set_zlim(-100, 3500)
