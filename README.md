@@ -6,6 +6,29 @@
 
 ![MC-Calib](docs/illustration.png)
 
+
+## Quick Start (After Setup)
+
+```bash
+# 1. Resume container session
+docker start -ai mc-calib-dev
+
+# 2. Move to working directory
+cd build && make -j$(nproc)
+
+# Optional: Add color to the terminal prompt inside the container
+export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
+
+# 3. Run the calibration
+./apps/calibrate/calibrate ../configs/calib_param_gaze_lab_main.yml
+
+# 4. Run post-calibration analysis
+python3 ./python_utils/post_calibration_analysis.py -d ./data/gaze2/
+
+# Optional: Remove a folder
+sudo rm -rf /path/to/your/folder
+```
+
 ## MC-Calib Installation Guide
 
 ### 📦 Requirements
@@ -101,14 +124,14 @@ docker start -ai mc-calib-dev
 # Move to working directory
 cd build && make -j$(nproc)
 
-# Remove container completely
-docker rm mc-calib-dev
-
 # Optional: Add color to the terminal prompt inside the container
 export PS1="\[\e[1;32m\]\u@\h:\w\\$ \[\e[0m\]"
 
 # Optional: Remove a folder
 sudo rm -rf /path/to/your/folder
+
+# Optional:Remove container completely
+docker rm mc-calib-dev
 ```
 
 ## Repository Usage
